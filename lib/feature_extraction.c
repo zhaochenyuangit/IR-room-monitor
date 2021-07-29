@@ -1,5 +1,4 @@
 #include "feature_extraction.h"
-#include "image_size.h"
 static uint32_t calc_centroid(uint8_t *mask, int width, int height, uint32_t *centroid_index);
 static int calc_centrals(uint8_t *submask, int width, int height, uint32_t **location_list_ptr, uint8_t **distance_list_ptr);
 void chamfer_distance_transform(uint8_t *mask, int width, int height, int a, int b);
@@ -261,8 +260,11 @@ void delete_blob_list(Blob *blob_list, int n_blobs)
     {
         free(blob_list[i].central_distance_list);
         free(blob_list[i].central_index_list);
+        blob_list[i].central_distance_list = NULL;
+        blob_list[i].central_index_list = NULL;
     }
     free(blob_list);
+    blob_list = NULL;
 }
 
 int central_detector(uint8_t *input, uint8_t *output, int const img_w, int const img_h)

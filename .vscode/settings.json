@@ -1,0 +1,8 @@
+{
+    "files.associations": {
+        "detect.h": "c",
+        "feature_extraction.h": "c",
+        "macro.h": "c",
+        "grideye_api_common.h": "c"
+    }
+}

@@ -5,9 +5,12 @@
 #include "grideye_api_common.h"
 #include "assert.h"
 #include <stdint.h>
+#include "macro.h"
 
 typedef struct Filter Filter;
 typedef int (*pool_function_t)(short[], int);
+
+int blob_detection(short *raw, uint8_t *result);
 
 /*API functions*/
 void image_copy(short *src, short *dst, int size);
@@ -16,11 +19,6 @@ int labeling8(uint8_t *mask, int width, int height);
 bool average_filter(short *image,int width, int height, int side);
 bool binary_fill_holes(uint8_t *mask,int width, int height);
 bool discrete_convolution_2d_seperable(short *image,int width,int height,Filter *fx, Filter *fy);
-
-/*validation functions*/
-struct Filter *gaussian_kernel_2d(double sigma);
-void discrete_convolution_2d(short *image, short *output, int image_width, int image_height, struct Filter *filter, int step);
-void pooling_2d(short *image, short *output, int image_width, int image_height, struct Filter *mask, pool_function_t fun, int step);
 
 /*low level functions*/
 struct Filter *gkern_1d(double sigma);
