@@ -2,6 +2,7 @@
 
 static const char *TAG = "debug";
 esp_mqtt_client_handle_t client = NULL;
+TaskHandle_t img_process = NULL;
 xQueueHandle q_pixels = NULL;
 xQueueHandle q_thms = NULL;
 xQueueHandle q_listen = NULL;
@@ -15,16 +16,10 @@ char mask_msg_buf[26000];
 
 uint8_t mask[IM_LEN];
 ObjectList tracking;
+volatile int global_threshold = 22 * AMG8833_TEMP_FACTOR;
 
 void image_process(void *arg)
 {
-    printf("%d\n", (int)arg);
-    short room_temp = 22 * 256;
-    if (arg != NULL)
-    {
-        room_temp = (int)arg - 4 * 256;
-    }
-    printf("set room temp thres to %f\n", room_temp / 256.0);
     short pixel_value[SNR_SZ];
     char performance_msg_buf[10];
     char count_msg_buf[10];
@@ -44,7 +39,7 @@ void image_process(void *arg)
             performance_evaluation(0);
             sh_array_to_string(pixel_value, pixel_msg_buf, SNR_SZ);
             xSemaphoreGive(sema_raw);
-            int n_blobs = blob_detection(pixel_value, mask, room_temp);
+            int n_blobs = blob_detection(pixel_value, mask, global_threshold);
 #if DEBUG
             c_array_to_string(mask, mask_msg_buf, IM_LEN);
             xSemaphoreGive(sema_im);
@@ -105,6 +100,12 @@ void listen_topic(void *_)
             {
                 tracking.reset_count();
             }
+            if (strcmp(msg.topic, "dht11/room_temp") == 0)
+            {
+                int temp = atoi(msg.msg);
+                printf("change global temp to: %d\n", temp);
+                global_threshold = temp*AMG8833_TEMP_FACTOR;
+            }
         }
     }
 }
@@ -115,7 +116,7 @@ int detect_activation(short *pixels, short thms, UCHAR *mask)
 {
     int count = 0;
     memset(mask, 0, SNR_SZ);
-    short low_b = thms - 4 * 256;
+    short low_b = global_threshold;
     for (int i = 0; i < SNR_SZ; i++)
     {
         if (pixels[i] > low_b)
@@ -127,23 +128,33 @@ int detect_activation(short *pixels, short thms, UCHAR *mask)
     return count;
 }
 
+void temp_calibration()
+{
+    int room_temperature = 0;
+    struct dht11_reading dht11_data;
+    for (int i = 0; i < 100; i++)
+    {
+        dht11_data = DHT11_read();
+        if (dht11_data.status)
+        {
+            i = 0;
+            continue;
+        }
+        room_temperature *= 0.5;
+        room_temperature += dht11_data.temperature * 0.5;
+    }
+    global_threshold = (room_temperature)*AMG8833_TEMP_FACTOR;
+    char buf[20];
+    sprintf(buf,"%d",global_threshold/256);
+    mqtt_send(client,"dht11/thres",buf);
+}
+
 void read_grideye(void *parameter)
 {
     short pixel_value[SNR_SZ];
     short thms_value;
     int no_activate_frame = 10;
-    {
-        int room_temperature = 0;
-        for (int init = 0; init < 100; init++)
-        {
-            read_thermistor(&thms_value);
-            room_temperature *= 0.5;
-            room_temperature += 0.5 * thms_value;
-            printf("thms %d, sum %d\n", thms_value, room_temperature);
-            vTaskDelay(pdMS_TO_TICKS(100));
-        }
-        xTaskCreatePinnedToCore(image_process, "process", 4000, (void *)room_temperature, 2, NULL, 0);
-    }
+
     while (1)
     {
         read_pixels(pixel_value);
@@ -203,6 +214,7 @@ extern "C" void app_main(void)
     start_wifi();
     start_mqtt(&client);
     mqtt_listen(client, "amg8833/reset", &q_listen);
+    mqtt_listen(client, "dht11/room_temp", &q_listen);
 #endif
     q_pixels = xQueueCreate(q_len, sizeof(short[SNR_SZ]));
     q_thms = xQueueCreate(q_len, sizeof(short));
@@ -224,13 +236,18 @@ extern "C" void app_main(void)
     {
         ESP_LOGE(TAG, "create sema im failed");
     }
+
 #ifdef UART_SIM
     xTaskCreatePinnedToCore(uart_receive_pixels, "uart_event", 4000, (void *)q_pixels, 5, NULL, 1);
-    xTaskCreatePinnedToCore(image_process, "process", 4000, NULL, 2, NULL, 1);
 #else
     xTaskCreatePinnedToCore(read_grideye, "read_grideye", 3000, NULL, 1, NULL, 1);
     xTaskCreatePinnedToCore(pub_thms, "publish thms", 2000, NULL, 1, NULL, 0);
+    // temperature calibration
+    DHT11_init(DHT11_PIN);
+    temp_calibration();
+    printf("init room temperature to %d C\n", global_threshold);
 #endif
+    xTaskCreatePinnedToCore(image_process, "process", 4000, NULL, 2, NULL, 1);
     xTaskCreatePinnedToCore(pub_raw, "publish", 2000, NULL, 1, NULL, 0);
     xTaskCreatePinnedToCore(pub_im, "publish im ", 2000, NULL, 1, NULL, 0);
     xTaskCreatePinnedToCore(listen_topic, "listen mqtt", 2000, NULL, 1, NULL, 0);

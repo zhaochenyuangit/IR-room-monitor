@@ -1,6 +1,8 @@
 #define IM_W (71)
 #define IM_H (71)
 #define IM_LEN (IM_W * IM_H)
+#define AMG8833_TEMP_FACTOR (256)
+#define DHT11_PIN GPIO_NUM_25 
 
 //#define UART_SIM
 #define ENABLE_NETWORK

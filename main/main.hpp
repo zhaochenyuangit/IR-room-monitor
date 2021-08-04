@@ -22,8 +22,10 @@ extern "C"
 #include "feature_extraction.h"
 #include "sim_uart.h"
 #include "helper.h"
+#include "dht11.h"
 }
 
 #include "human_object.hpp"
 #include "tracking.hpp"
 #include "macro.h"
+
