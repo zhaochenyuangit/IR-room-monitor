@@ -6,10 +6,10 @@
 #define ENABLE_NETWORK
 
 #define DEBUG 0
+
 #if DEBUG
 #define DBG_PRINT(format, args...)\                             
         do{\
-        printf("File %s Line %d << ",__FILE__,__LINE__);\
         printf(format, ##args);\
         }while (0)
 #else

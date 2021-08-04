@@ -10,7 +10,7 @@
 typedef struct Filter Filter;
 typedef int (*pool_function_t)(short[], int);
 
-int blob_detection(short *raw, uint8_t *result);
+int blob_detection(short *raw, uint8_t *result,short temp_min_thres);
 
 /*API functions*/
 void image_copy(short *src, short *dst, int size);

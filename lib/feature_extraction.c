@@ -275,7 +275,8 @@ int central_detector(uint8_t *input, uint8_t *output, int const img_w, int const
     int side = 3;
     int radius = (side - 1) / 2;
     int center = radius * side + radius;
-    const int threshold = 3;
+    const int value_threshold = 3;
+    const int count_threshold = 6;
     for (int i = 0; i < (img_w * img_h); i++)
     {
         output[i] = 0;
@@ -285,7 +286,7 @@ int central_detector(uint8_t *input, uint8_t *output, int const img_w, int const
         for (int c = 1; c < img_w - 1; c++)
         {
             int px_index = r * img_w + c;
-            if (input[px_index] <= threshold)
+            if (input[px_index] <= value_threshold)
             {
                 continue;
             }
@@ -306,8 +307,8 @@ int central_detector(uint8_t *input, uint8_t *output, int const img_w, int const
                     sum += inter;
                 }
             }
-            output[px_index] = ((sum >= threshold)) ? input[px_index] : 0;
-            n_centrals += (sum >= threshold) ? 1 : 0;
+            output[px_index] = ((sum >= count_threshold)) ? input[px_index] : 0;
+            n_centrals += (sum >= count_threshold) ? 1 : 0;
         }
     }
     return n_centrals;

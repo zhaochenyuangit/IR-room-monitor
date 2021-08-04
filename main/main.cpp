@@ -16,8 +16,15 @@ char mask_msg_buf[26000];
 uint8_t mask[IM_LEN];
 ObjectList tracking;
 
-void image_process(void *_)
+void image_process(void *arg)
 {
+    printf("%d\n", (int)arg);
+    short room_temp = 22 * 256;
+    if (arg != NULL)
+    {
+        room_temp = (int)arg - 4 * 256;
+    }
+    printf("set room temp thres to %f\n", room_temp / 256.0);
     short pixel_value[SNR_SZ];
     char performance_msg_buf[10];
     char count_msg_buf[10];
@@ -37,7 +44,7 @@ void image_process(void *_)
             performance_evaluation(0);
             sh_array_to_string(pixel_value, pixel_msg_buf, SNR_SZ);
             xSemaphoreGive(sema_raw);
-            int n_blobs = blob_detection(pixel_value, mask);
+            int n_blobs = blob_detection(pixel_value, mask, room_temp);
 #if DEBUG
             c_array_to_string(mask, mask_msg_buf, IM_LEN);
             xSemaphoreGive(sema_im);
@@ -108,7 +115,7 @@ int detect_activation(short *pixels, short thms, UCHAR *mask)
 {
     int count = 0;
     memset(mask, 0, SNR_SZ);
-    short low_b = 6000; //thms - 2.5 * 256;
+    short low_b = thms - 4 * 256;
     for (int i = 0; i < SNR_SZ; i++)
     {
         if (pixels[i] > low_b)
@@ -125,6 +132,18 @@ void read_grideye(void *parameter)
     short pixel_value[SNR_SZ];
     short thms_value;
     int no_activate_frame = 10;
+    {
+        int room_temperature = 0;
+        for (int init = 0; init < 100; init++)
+        {
+            read_thermistor(&thms_value);
+            room_temperature *= 0.5;
+            room_temperature += 0.5 * thms_value;
+            printf("thms %d, sum %d\n", thms_value, room_temperature);
+            vTaskDelay(pdMS_TO_TICKS(100));
+        }
+        xTaskCreatePinnedToCore(image_process, "process", 4000, (void *)room_temperature, 2, NULL, 0);
+    }
     while (1)
     {
         read_pixels(pixel_value);
@@ -207,11 +226,11 @@ extern "C" void app_main(void)
     }
 #ifdef UART_SIM
     xTaskCreatePinnedToCore(uart_receive_pixels, "uart_event", 4000, (void *)q_pixels, 5, NULL, 1);
+    xTaskCreatePinnedToCore(image_process, "process", 4000, NULL, 2, NULL, 1);
 #else
-    xTaskCreatePinnedToCore(read_grideye, "read_grideye", 3000, NULL, 1, NULL, 0);
+    xTaskCreatePinnedToCore(read_grideye, "read_grideye", 3000, NULL, 1, NULL, 1);
     xTaskCreatePinnedToCore(pub_thms, "publish thms", 2000, NULL, 1, NULL, 0);
 #endif
-    xTaskCreatePinnedToCore(image_process, "process", 4000, NULL, 2, NULL, 1);
     xTaskCreatePinnedToCore(pub_raw, "publish", 2000, NULL, 1, NULL, 0);
     xTaskCreatePinnedToCore(pub_im, "publish im ", 2000, NULL, 1, NULL, 0);
     xTaskCreatePinnedToCore(listen_topic, "listen mqtt", 2000, NULL, 1, NULL, 0);

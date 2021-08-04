@@ -22,6 +22,7 @@ private:
 private:
     int match_centroid(HumanObject *ob, Blob *blob_list, int n_blobs);
     int match_centrals(HumanObject *ob, Blob *blob_list, int n_blobs);
+    int virtual_match_centroid(HumanObject *ob, Blob *blob_list, int n_blobs);
     bool blob_registration(Blob *blob);
     bool append_object(HumanObject *ob);
     bool delete_object_by_label(int label);

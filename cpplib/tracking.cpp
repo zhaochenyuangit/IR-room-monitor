@@ -106,6 +106,31 @@ bool ObjectList::count_and_delete_every_objects()
     return 0;
 }
 
+int ObjectList::virtual_match_centroid(HumanObject *ob, Blob *blob_list, int n_blobs)
+{
+    if (ob == NULL)
+    {
+        printf("error: null object pointer\n");
+        return 0;
+    }
+    int ob_x, ob_y;
+    ob->get_virtual_pos(&ob_x, &ob_y);
+    for (int i = 1; i <= n_blobs; i++)
+    {
+        Blob blob = blob_list[i - 1];
+        int blob_x = blob.centroid_index % IM_W;
+        int blob_y = blob.centroid_index / IM_W;
+        int distance = distance_l1(blob_x, ob_x, blob_y, ob_y);
+        if (distance <= 20)
+        {
+            DBG_PRINT("find blob %d on object %d's virtual path with distance %d\n", i, ob->get_index(), distance);
+            ob->virtual_update(blob_x, blob_y, blob.size);
+            return i;
+        }
+    }
+    return 0;
+}
+
 int ObjectList::match_centroid(HumanObject *ob, Blob *blob_list, int n_blobs)
 {
     if (ob == NULL)
@@ -237,27 +262,49 @@ void ObjectList::matching(Blob *blob_list, int n_blobs)
     while (p)
     {
         int matched_blob_num = 0;
-        matched_blob_num = match_centroid(p->ob, blob_list, n_blobs);
-        if (matched_blob_num)
+        if (p->ob->get_virtual_age() > 0)
         {
-            matched_flag[matched_blob_num - 1] = true;
-            p = p->next;
-            continue;
+            matched_blob_num = virtual_match_centroid(p->ob, blob_list, n_blobs);
+            if (matched_blob_num)
+            {
+                matched_flag[matched_blob_num - 1] = true;
+                p = p->next;
+                continue;
+            }
         }
-        matched_blob_num = match_centrals(p->ob, blob_list, n_blobs);
-        if (matched_blob_num)
+        else
         {
-            matched_flag[matched_blob_num - 1] = true;
-            p = p->next;
-            continue;
+            matched_blob_num = match_centroid(p->ob, blob_list, n_blobs);
+            if (matched_blob_num)
+            {
+                matched_flag[matched_blob_num - 1] = true;
+                p = p->next;
+                continue;
+            }
+            matched_blob_num = match_centrals(p->ob, blob_list, n_blobs);
+            if (matched_blob_num)
+            {
+                matched_flag[matched_blob_num - 1] = true;
+                p = p->next;
+                continue;
+            }
         }
-
-        /* if an object is not matched with any blob then delete it*/
-        int relative_count = p->ob->counting();
-        count += relative_count;
-        int label = p->ob->get_index();
-        delete_object_by_label(label);
-        p = p->next;
+        /* if an object is not matched with any blob then propagate it
+            virtually to see if there is a matching in the next 3 frames
+            if still not matched then deleted it */
+        if (p->ob->get_virtual_age() < 3)
+        {
+            p->ob->virtual_propagation();
+            p = p->next;
+        }
+        else
+        {
+            int relative_count = p->ob->counting();
+            count += relative_count;
+            int label = p->ob->get_index();
+            delete_object_by_label(label);
+            p = p->next;
+        }
     }
 
     /* check if small blobs could be a fraction from a large blob in previous frame,

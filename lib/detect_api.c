@@ -1,6 +1,6 @@
 #include "detect.h"
 
-int blob_detection(short *raw, uint8_t *result)
+int blob_detection(short *raw, uint8_t *result,short temp_min_thres)
 {
     static short holder1[IM_LEN];
     static short holder2[IM_LEN];
@@ -11,13 +11,12 @@ int blob_detection(short *raw, uint8_t *result)
     grayscale_thresholding(im, holder2, IM_LEN, holder1, 0);
     int max_temp = max_of_array(holder2, IM_LEN);
     int std_temp = std_of_array(holder2, IM_LEN);
-    short th = max_temp - 3 * std_temp;
-    short min_th = 25 * 256;
-    th = (th > min_th) ? th : min_th;
+    short th = max_temp - 4 * std_temp;
+    th = (th > temp_min_thres) ? th : temp_min_thres;
     binary_thresholding(holder2, result, IM_LEN, &th, 1);
     binary_fill_holes(result, IM_W, IM_H);
     int num = labeling8(result, IM_W, IM_H);
-    DBG_PRINT("detected %d blobs\n", n_blobs);
+    DBG_PRINT("detected %d blobs\n", num);
     return num;
 }
 

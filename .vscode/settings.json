@@ -3,6 +3,15 @@
         "detect.h": "c",
         "feature_extraction.h": "c",
         "macro.h": "c",
-        "grideye_api_common.h": "c"
+        "grideye_api_common.h": "c",
+        "*.tcc": "cpp",
+        "chrono": "cpp",
+        "cinttypes": "cpp",
+        "cmath": "cpp",
+        "complex": "cpp",
+        "numeric": "cpp",
+        "ratio": "cpp",
+        "cstdlib": "cpp",
+        "list": "cpp"
     }
 }

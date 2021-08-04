@@ -19,9 +19,10 @@ private:
         int pos_y;
         int vel_x;
         int vel_y;
-    } last_, now_;
+    } last_, now_,vrtl_;
     int first_x_;
     int first_y_;
+    int vrtl_age_;
 
 public:
     HumanObject(int label, int pos_x, int pos_y, int size);
@@ -35,4 +36,9 @@ public:
     void get_last_pos(int *lpos_x, int *lpos_y);
     void get_now_pos(int *npos_x, int *npos_y);
     int counting();
+
+    void virtual_update(int pos_x, int pos_y, int size);
+    void virtual_propagation();
+    void get_virtual_pos(int *vrtl_predict_pos_x, int *vrtl_predict_pos_y);
+    int get_virtual_age();
 };

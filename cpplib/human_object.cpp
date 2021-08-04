@@ -13,7 +13,7 @@ HumanObject::HumanObject(int blob_label, int pos_x, int pos_y, int size)
     now_.vel_y = 0;
     now_.size = size;
     last_ = now_;
-
+    vrtl_age_ = 0;
     first_x_ = pos_x;
     first_y_ = pos_y;
 }
@@ -91,4 +91,35 @@ void HumanObject::get_now_pos(int *npos_x, int *npos_y)
 {
     *npos_x = now_.pos_x;
     *npos_y = now_.pos_y;
+}
+
+int HumanObject::get_virtual_age()
+{
+    return vrtl_age_;
+}
+
+void HumanObject::virtual_update(int pos_x, int pos_y, int size)
+{
+    vrtl_age_ = 0;
+    now_.pos_x = pos_x;
+    now_.pos_y = pos_y;
+    now_.size = size;
+    now_.vel_x += pos_x - vrtl_.pos_x;
+    now_.vel_y += pos_y - vrtl_.pos_y;
+    last_ = now_;
+    DBG_PRINT("virtual updated at pos (%d, %d) vel (%d, %d)\n", pos_x, pos_y, now_.vel_x, now_.vel_y);
+}
+
+void HumanObject::virtual_propagation()
+{
+    vrtl_age_ += 1;
+    vrtl_.pos_x = now_.pos_x + now_.vel_x * (vrtl_age_ + 1);
+    vrtl_.pos_y = now_.pos_y + now_.vel_y * (vrtl_age_ + 1);
+    printf("object %d virtual propagated, age: %d, virtual pos: (%d, %d)\n", label_, vrtl_age_, vrtl_.pos_x, vrtl_.pos_y);
+}
+
+void HumanObject::get_virtual_pos(int *vppos_x, int *vppos_y)
+{
+    *vppos_x = vrtl_.pos_x;
+    *vppos_y = vrtl_.pos_y;
 }
