@@ -70,7 +70,7 @@ static void mqtt_event_handler(void *handler_args, esp_event_base_t base, int32_
     mqtt_event_handler_cb(event_data);
 }
 
-esp_err_t start_mqtt(esp_mqtt_client_handle_t *client_ptr)
+esp_err_t start_mqtt(esp_mqtt_client_handle_t *client_ptr, const char *uri, const char *username, const char *password)
 {
     /*generate some random client name to avoid collision on MQTT broker
     esp_ramdom() returns true random number when wifi is enabled*/
@@ -79,9 +79,11 @@ esp_err_t start_mqtt(esp_mqtt_client_handle_t *client_ptr)
 
     mqtt_event_group = xEventGroupCreate();
     esp_mqtt_client_config_t mqtt_cfg = {
-        .uri = MYMQTT,
+        .uri = uri,
         .port = 1883,
         .client_id = client_name,
+        .username = username,
+        .password = password,
     };
     *client_ptr = esp_mqtt_client_init(&mqtt_cfg);
     esp_mqtt_client_register_event(*client_ptr, ESP_EVENT_ANY_ID, mqtt_event_handler, *client_ptr);
@@ -89,7 +91,7 @@ esp_err_t start_mqtt(esp_mqtt_client_handle_t *client_ptr)
     ESP_LOGI(TAG, "wait for flag");
     //EventBits_t bit =
     xEventGroupWaitBits(mqtt_event_group, MQTT_CONNECTED_BIT, pdFALSE, pdFALSE, portMAX_DELAY);
-
+    vEventGroupDelete(mqtt_event_group);
     return (ESP_OK);
 }
 

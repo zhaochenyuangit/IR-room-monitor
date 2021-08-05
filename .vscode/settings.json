@@ -12,6 +12,7 @@
         "numeric": "cpp",
         "ratio": "cpp",
         "cstdlib": "cpp",
-        "list": "cpp"
+        "list": "cpp",
+        "sntp_controller.h": "c"
     }
 }

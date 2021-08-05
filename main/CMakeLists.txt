@@ -9,6 +9,7 @@ idf_component_register(SRCS "main.cpp"
                             "../lib/helper.c"
                             "../lib/feature_extraction.c"
                             "../lib/dht11.c"
+                            "../lib/sntp_controller.c"
                             "../cpplib/human_object.cpp"
                             "../cpplib/tracking.cpp"
 

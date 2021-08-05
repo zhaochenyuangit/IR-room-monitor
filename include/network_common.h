@@ -14,26 +14,6 @@
 
 #include "esp_log.h"
 #include "mqtt_client.h"
-///* home
-#define MYSSID "Racoon&Masters"
-#define MYPWD "gotomunich2019"
-#define MYMQTT "mqtt://192.168.178.42:1883"
-//*/
-/*Professor's room
-#define MYSSID "CAPS"
-#define MYPWD "caps!schulz-wifi"
-#define MYMQTT "mqtt://131.159.85.131:1883"
-//*/
-/* my phone
-#define MYSSID "JOJO!"
-#define MYPWD "11111111"
-#define MYMQTT "mqtt://192.168.43.197:1883"
-//*/
-/* seminar room
-#define MYSSID "capslab"
-#define MYPWD "12356789"
-#define MYMQTT "mqtt://172.20.10.4:1883"
-//*/
 #define WIFI_CONNECTED_BIT BIT0
 #define WIFI_FAIL_BIT BIT1
 #define MQTT_CONNECTED_BIT BIT0
@@ -52,10 +32,13 @@ struct mqtt_msg
 esp_err_t start_wifi(void);
 /**
  * @brief start mqtt
- * @param a pointer to client handle (pointer to pointer)
+ * @param client a pointer to client handle (pointer to pointer)
+ * @param uri the uri of the brocker
+ * @param username set to NULL if no username
+ * @param password set to NULL if no password
  * @return ESP_OK on success
  */
-esp_err_t start_mqtt(esp_mqtt_client_handle_t *client);
+esp_err_t start_mqtt(esp_mqtt_client_handle_t *client, const char *uri, const char *username, const char *password);
 /**
  * @brief publish message with QoS 1
  * @param client the cilent handle

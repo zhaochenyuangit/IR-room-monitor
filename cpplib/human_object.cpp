@@ -115,7 +115,7 @@ void HumanObject::virtual_propagation()
     vrtl_age_ += 1;
     vrtl_.pos_x = now_.pos_x + now_.vel_x * (vrtl_age_ + 1);
     vrtl_.pos_y = now_.pos_y + now_.vel_y * (vrtl_age_ + 1);
-    printf("object %d virtual propagated, age: %d, virtual pos: (%d, %d)\n", label_, vrtl_age_, vrtl_.pos_x, vrtl_.pos_y);
+    DBG_PRINT("object %d virtual propagated, age: %d, virtual pos: (%d, %d)\n", label_, vrtl_age_, vrtl_.pos_x, vrtl_.pos_y);
 }
 
 void HumanObject::get_virtual_pos(int *vppos_x, int *vppos_y)

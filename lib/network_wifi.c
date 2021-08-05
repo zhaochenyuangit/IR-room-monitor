@@ -1,4 +1,5 @@
 #include "network_common.h"
+#include "macro.h"
 
 static const char *TAG = "my_wifi";
 static EventGroupHandle_t wifi_event_group;
@@ -96,5 +97,6 @@ esp_err_t start_wifi(void)
         ESP_LOGI(TAG, "wifi connection failed");
         vTaskDelay(portMAX_DELAY);
     }
+    vEventGroupDelete(wifi_event_group);
     return (ESP_OK);
 }

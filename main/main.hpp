@@ -23,6 +23,7 @@ extern "C"
 #include "sim_uart.h"
 #include "helper.h"
 #include "dht11.h"
+#include "sntp_controller.h"
 }
 
 #include "human_object.hpp"
