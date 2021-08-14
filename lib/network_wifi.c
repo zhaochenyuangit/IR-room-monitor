@@ -24,6 +24,7 @@ static void my_handler(void *handler_arg, esp_event_base_t base,
             if (wifi_retry > 3)
             {
                 xEventGroupSetBits(wifi_event_group, WIFI_FAIL_BIT);
+                esp_restart();
             }
             else
             {

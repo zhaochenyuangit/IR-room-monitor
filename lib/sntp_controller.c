@@ -11,7 +11,7 @@ void initializeSntp(void)
 {
     ESP_LOGI(TAG, "Initializing SNTP");
     sntp_setoperatingmode(SNTP_OPMODE_POLL);
-    sntp_setservername(0, "pool.ntp.org");
+    sntp_setservername(0, "ntp1.in.tum.de");
     //pool.ntp.org
     //ntp1.in.tum.de -> use this server in Garching
     sntp_set_time_sync_notification_cb(time_sync_notification_cb);

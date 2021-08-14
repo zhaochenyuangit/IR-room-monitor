@@ -98,7 +98,7 @@ esp_err_t start_mqtt(esp_mqtt_client_handle_t *client_ptr, const char *uri, cons
 void mqtt_send(esp_mqtt_client_handle_t client, const char *topic, const char *data)
 {
     int msg_id;
-    msg_id = esp_mqtt_client_publish(client, topic, data, 0, 1, 0);
+    msg_id = esp_mqtt_client_publish(client, topic, data, 0, 0, 0);
     ESP_LOGD(TAG, "mqtt published, msg id=%d", msg_id);
 }
 

@@ -19,7 +19,9 @@ char mask_msg_buf[26000];
 uint8_t mask[IM_LEN];
 ObjectList tracking;
 volatile int global_threshold = 22 * AMG8833_TEMP_FACTOR;
-volatile int global_count = 0;
+volatile int RTC_NOINIT_ATTR global_count;
+
+static void pm_config();
 
 void image_process(void *arg)
 {
@@ -118,7 +120,7 @@ void listen_topic(void *_)
             }
             if (strcmp(msg.topic, "dht11/room_temp") == 0)
             {
-                int temp = atoi(msg.msg);
+                int temp = atof(msg.msg);
                 printf("change global temp to: %d\n", temp);
                 global_threshold = temp * AMG8833_TEMP_FACTOR;
             }
@@ -160,7 +162,7 @@ void temp_calibration()
         room_temperature += dht11_data.temperature * 0.5;
         vTaskDelay(pdMS_TO_TICKS(100));
     }
-    global_threshold = (room_temperature + 1) * AMG8833_TEMP_FACTOR;
+    global_threshold = (room_temperature + 1.5) * AMG8833_TEMP_FACTOR;
 }
 
 void periodical_temp_calib(void *_)
@@ -200,7 +202,7 @@ void read_grideye(void *parameter)
         read_pixels(pixel_value);
         read_thermistor(&thms_value);
         int count = detect_activation(pixel_value, thms_value, mask);
-        if (count <= 5)
+        if (count <= 2)
         {
             no_activate_frame += 1;
         }
@@ -244,11 +246,17 @@ void pub_thms(void *_)
 
 extern "C" void app_main(void)
 {
+    if (esp_reset_reason() == ESP_RST_POWERON)
+    {
+        global_count = 0;
+    }
+    tracking.set_count(global_count);
 #ifdef UART_SIM
     printf("main programm start\n");
     uart_init();
 #else
     i2c_master_init();
+    //pm_config();
 #endif
 #ifdef ENABLE_NETWORK
     start_wifi();
@@ -258,6 +266,7 @@ extern "C" void app_main(void)
     start_mqtt(&iot_client, IOT_URI, IOT_USERNAME, IOT_PASSWORD);
     mqtt_listen(client, "amg8833/reset", &q_listen);
     mqtt_listen(client, "dht11/room_temp", &q_listen);
+
 #endif
     q_pixels = xQueueCreate(q_len, sizeof(short[SNR_SZ]));
     q_thms = xQueueCreate(q_len, sizeof(short));
@@ -297,4 +306,20 @@ extern "C" void app_main(void)
     xTaskCreatePinnedToCore(pub_raw, "publish", 2000, NULL, 1, NULL, 0);
     xTaskCreatePinnedToCore(pub_im, "publish im ", 2000, NULL, 1, NULL, 0);
     xTaskCreatePinnedToCore(listen_topic, "listen mqtt", 2000, NULL, 1, NULL, 0);
+}
+
+static void pm_config()
+{
+#if CONFIG_PM_ENABLE
+    // Configure dynamic frequency scaling:
+    // maximum and minimum frequencies are set in sdkconfig,
+    // automatic light sleep is enabled if tickless idle support is enabled.
+    esp_pm_config_esp32_t pm_config = {.max_freq_mhz = CONFIG_ESP32_DEFAULT_CPU_FREQ_MHZ,
+                                       .min_freq_mhz = CONFIG_ESP32_XTAL_FREQ,
+#if CONFIG_FREERTOS_USE_TICKLESS_IDLE
+                                       .light_sleep_enable = false,
+#endif
+    };
+    ESP_ERROR_CHECK(esp_pm_configure(&pm_config));
+#endif // CONFIG_PM_ENABLE
 }

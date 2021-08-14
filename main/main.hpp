@@ -24,6 +24,7 @@ extern "C"
 #include "helper.h"
 #include "dht11.h"
 #include "sntp_controller.h"
+#include "esp_pm.h"
 }
 
 #include "human_object.hpp"

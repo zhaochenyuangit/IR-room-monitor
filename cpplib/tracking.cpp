@@ -39,6 +39,12 @@ void ObjectList::reset_count()
     count = 0;
 }
 
+void ObjectList::set_count(int i)
+{
+    printf("recover count from global variable:%d\n", count);
+    count = i;
+}
+
 bool ObjectList::append_object(HumanObject *ob)
 {
     DBG_PRINT("insert Object\n");

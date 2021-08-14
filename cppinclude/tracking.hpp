@@ -34,6 +34,7 @@ public:
     ObjectNode *get_head_node();
     int get_count();
     void reset_count();
+    void set_count(int);
 
     void matching(Blob *blob_list, int n_blobs);
     bool count_and_delete_every_objects();

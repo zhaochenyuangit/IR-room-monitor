@@ -18,15 +18,15 @@
 #define DBG_PRINT(format, args...)
 #endif
 
-///* home
+/* home
 #define MYSSID "Racoon&Masters"
 #define MYPWD "gotomunich2019"
 #define MYMQTT "mqtt://192.168.178.42:1883"
 //*/
-/*Professor's room
+///*Professor's room
 #define MYSSID "CAPS"
 #define MYPWD "caps!schulz-wifi"
-#define MYMQTT "mqtt://131.159.85.131:1883"
+#define MYMQTT "mqtt://test.mosquitto.org:1883" //"mqtt://131.159.85.131:1883"
 //*/
 /* my phone
 #define MYSSID "JOJO!"
