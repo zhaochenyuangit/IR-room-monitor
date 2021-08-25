@@ -262,7 +262,7 @@ extern "C" void app_main(void)
     start_wifi();
     initializeSntp();
     obtainTime();
-    start_mqtt(&client, MYMQTT, NULL, NULL);
+    start_mqtt(&client, MYMQTT, HIVEMQ_USERNAME, HIVEMQ_PASSWORD);
     start_mqtt(&iot_client, IOT_URI, IOT_USERNAME, IOT_PASSWORD);
     mqtt_listen(client, "amg8833/reset", &q_listen);
     mqtt_listen(client, "dht11/room_temp", &q_listen);

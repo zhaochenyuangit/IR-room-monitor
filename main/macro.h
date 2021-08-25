@@ -26,7 +26,9 @@
 ///*Professor's room
 #define MYSSID "CAPS"
 #define MYPWD "caps!schulz-wifi"
-#define MYMQTT "mqtt://test.mosquitto.org:1883" //"mqtt://131.159.85.131:1883"
+#define HIVEMQ_USERNAME "ircamera"
+#define HIVEMQ_PASSWORD "tumCAPS2021"
+#define MYMQTT "mqtt://broker.hivemq.com:1883" //"mqtt://131.159.85.131:1883"
 //*/
 /* my phone
 #define MYSSID "JOJO!"
