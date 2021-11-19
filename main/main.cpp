@@ -64,13 +64,15 @@ void image_process(void *arg)
             global_count = count;
             sprintf(count_msg_buf, "%d", count);
             mqtt_send(client, "amg8833/count", count_msg_buf);
+            /*
             struct timeval now;
             gettimeofday(&now, NULL);
             int64_t timestamp_ms = ((int64_t)now.tv_sec) * 1000 + now.tv_usec / 1000;
             sprintf(count_msg_buf, IOT_MESSAGE_PATTERN, IOT_USERNAME_PUB, IOT_SENSOR, count, IOT_DEVICE_ID, timestamp_ms);
-            //printf("timestamp when count changes: %lld\n", timestamp_ms);
+            printf("timestamp when count changes: %lld\n", timestamp_ms);
             printf("msg: %s\n", count_msg_buf);
             mqtt_send(iot_client, IOT_TOPIC, count_msg_buf);
+            */
 #endif
             DBG_PRINT("count %d\n\n", tracking.get_count());
         }
@@ -262,8 +264,8 @@ extern "C" void app_main(void)
     start_wifi();
     initializeSntp();
     obtainTime();
-    start_mqtt(&client, MYMQTT, HIVEMQ_USERNAME, HIVEMQ_PASSWORD);
-    start_mqtt(&iot_client, IOT_URI, IOT_USERNAME, IOT_PASSWORD);
+    start_mqtt(&client, MYMQTT, NULL, NULL);
+    //start_mqtt(&iot_client, IOT_URI, IOT_USERNAME, IOT_PASSWORD);
     mqtt_listen(client, "amg8833/reset", &q_listen);
     mqtt_listen(client, "dht11/room_temp", &q_listen);
 
@@ -306,6 +308,10 @@ extern "C" void app_main(void)
     xTaskCreatePinnedToCore(pub_raw, "publish", 2000, NULL, 1, NULL, 0);
     xTaskCreatePinnedToCore(pub_im, "publish im ", 2000, NULL, 1, NULL, 0);
     xTaskCreatePinnedToCore(listen_topic, "listen mqtt", 2000, NULL, 1, NULL, 0);
+    while(1){
+        printf("ram: %d\n",esp_get_free_heap_size());
+        vTaskDelay(pdMS_TO_TICKS(5000));
+    }
 }
 
 static void pm_config()

@@ -18,12 +18,12 @@
 #define DBG_PRINT(format, args...)
 #endif
 
-/* home
+///* home
 #define MYSSID "Racoon&Masters"
 #define MYPWD "gotomunich2019"
 #define MYMQTT "mqtt://192.168.178.42:1883"
 //*/
-///*Professor's room
+/*Professor's room
 #define MYSSID "CAPS"
 #define MYPWD "caps!schulz-wifi"
 #define HIVEMQ_USERNAME "ircamera"

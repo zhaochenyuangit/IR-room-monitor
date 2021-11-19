@@ -2,13 +2,15 @@
 
 ## What is this
 
-TODO: overview image
+![project-overview](img/tracking_overview.gif)
 
 This is the source code of a personnel counting device. The device is mounted on the top of a door frame, monitoring an area of about $3m^2$ below it. The device is able to count human enter/leave events relatively, and offers an human count value in the building. The count value can be used for optimization of heating, ventilation and air-condition usage of the building or occupancy control during the Corona pandemic. 
 
 The device is developed with a ESP32 board and an infrared thermopile array (Grideye Amg8833). It uses a traditional blob tracking based method. Data are transfered to a centralized data bank through MQTT.    
 
 Two platforms are used in this project. One of them is Node-Red for debug purpose, which visualizes the real-time camera data stream, show internal states of the device and send new configuration to the device. The other is the CAPS IoT Platform based on ElasticSearch+Kibana, developed by TUM researchers, which stores the count value published by the device in a data bank for long-term evaluation. Configurations of both platforms will also be introduced later in this document.
+
+![structure](img/image-20211119173009729.png)
 
 ## How to run it
 
@@ -18,7 +20,7 @@ Read camera frames from the termopile sensor.
 
 1. Hardware Circuiting: The thermopile sensor Grideye Amg8833 uses I2C interface. By default, the SDA pin and SCL pin on ESP32 are 22 and 21 relatively (however, they are configurable to any digital pin). 
 
-   TODO: wiring img
+   ![circuiting](img/grideye_bb.png)
 
 | ESP32           | 22 (SDA) | 21 (SCL) | GND  | 3.3V |
 | --------------- | -------- | -------- | ---- | ---- |
@@ -40,11 +42,15 @@ Read camera frames from the termopile sensor.
 
  Replay frame sequences by feeding frame data through UART. 
 
+By debugging, we do not have the time walking under the camera over and over for testing. The simulation script is used to replay a stored frame sequence so that we can save some time as well as analyze the performance of the algorithm frame by frame. 
+
+The stored data are a series of 8x8 grayscale images in csv format. Each frame is one line, containing 64 integer values. These integer values are separated by a comma (except for the last value) and their value represents the temperature of each pixel, multiplied by 256 (e.g. a value of 5120 means 20 degrees).  
+
 1. go to `macro.h` and uncomment `#define UART_SIM`
 
-2. the main function will not initialize the I2C interface at all but waiting for data through UART, expected data format is the same as `amg8833/pixels`
+2. the main function will not initialize the I2C interface at all but waiting for data through UART, expected data format is the same as `./python_scripts/stored_video_sequence`
 
-3. use the python script and the example data file under directory `/uart_sim`. The script will send one line at each time to simulate a frame sequence read from the camera. The command to use the script is
+3. use the python script and the example data file under directory `./python_scripts`. The script will send one line at each time to simulate a frame sequence read from the camera. The command to use the script is
 
    | python simulation.py -p <port> -m <mode> -f <file> | description                                                  |
    | -------------------------------------------------- | ------------------------------------------------------------ |
