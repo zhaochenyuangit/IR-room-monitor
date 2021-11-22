@@ -40,6 +40,8 @@ Read camera frames from the termopile sensor.
    | amg8833/count  | the final count value accumulated by every relative count    |
    | amg8833/speed  | Used for debug: the time consumed for processing one  frame (Note that because the camera runs at 10 fps, the process time must be less than 0.1s) |
 
+5. receive the messages in Node-RED and see the results in the dashboard. Setup Node-RED and import the json file under `./node-red-related/calibration_flows.json`. The user should configure the MQTT broker url for all MQTT client nodes. Besides, the user need to install two libraries offered by the Node-RED community, [dashboard](https://flows.nodered.org/node/node-red-dashboard) and [image-tools](https://flows.nodered.org/node/node-red-contrib-image-tools). To view the dashboard, type in *"<node-red IP address>:1880/ui"* in the browser
+
 ### UART Simulation
 
  Replay frame sequences by feeding frame data through UART. 
